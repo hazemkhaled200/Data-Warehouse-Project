@@ -1,9 +1,13 @@
 /*
-- This script is for creating the database 'Datawarehouse'
-	and creating bronze, silver, and gold schemas
-NOTE: This code will delete the Datawarehouse database if
-	exists and then will create it as an empty
-	database.
+======================================
+Create Database and Schemas
+======================================
+Script Purpose:
+	This script is for creating the database 'Datawarehouse'
+	and creating 'bronze', 'silver ', and 'gold' schemas
+WARNING:
+	This code will delete the 'Datawarehouse' database if it exists 
+	and then will create it as an empty database.
 */
 
 USE master;
