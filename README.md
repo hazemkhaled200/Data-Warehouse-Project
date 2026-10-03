@@ -33,7 +33,6 @@ This project is licensed under the MIT License. You are free to use, modify, and
 
 Hi, I'm Hazem Khaled 👋
 
-[1–2 sentences: your background and what you're working toward, e.g., "Aspiring data professional focused on SQL and Python, building hands-on projects in data warehousing and analytics."]
 
 📍 Based in Cairo, Egypt
 
