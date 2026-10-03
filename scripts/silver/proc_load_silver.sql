@@ -7,8 +7,9 @@ Usage example:
 	EXEC load_silver;
 */
 
-CREATE OR ALTER PROCEDURE load_silver AS
+CREATE OR ALTER PROCEDURE silver.load_silver AS
 BEGIN
+	DECLARE @start_time DATETIME, @end_time DATETIME, @batch_start DATETIME, @batch_end DATETIME
 	BEGIN TRY
 		PRINT('==========================')
 		PRINT('Loading silver layer...')
@@ -19,6 +20,9 @@ BEGIN
 		PRINT('--------------------------')
 
 		PRINT('>> Loading silver.crm_cust_info')
+		SET @batch_start = GETDATE();
+		SET @start_time = GETDATE();
+
 		TRUNCATE TABLE silver.crm_cust_info;
 		INSERT INTO silver.crm_cust_info (
 			cst_id,
@@ -52,8 +56,13 @@ BEGIN
 			WHERE cst_id IS NOT NULL
 		)t WHERE id_flag = 1
 
+		SET @end_time = GETDATE();
+		PRINT('Loading Duration: ' + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS VARCHAR) + ' Seconds')
+		PRINT('---------------')
 
 		PRINT('>> Loading silver.crm_prd_info')
+		SET @start_time = GETDATE();
+
 		TRUNCATE TABLE silver.crm_prd_info;
 		INSERT INTO silver.crm_prd_info (
 			prd_id,
@@ -81,7 +90,13 @@ BEGIN
 			DATEADD(DAY, -1, LEAD(prd_start_dt) OVER(PARTITION BY prd_key ORDER BY prd_start_dt)) AS prd_end_dt
 		FROM bronze.crm_prd_info;
 
+		SET @end_time = GETDATE();
+		PRINT('Loading Duration: ' + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS VARCHAR) + ' Seconds')
+		PRINT('---------------')
+
 		PRINT('>> Loading silver.crm_sales_details')
+		SET @start_time = GETDATE();
+
 		TRUNCATE TABLE silver.crm_sales_details;
 		INSERT INTO silver.crm_sales_details (
 			sls_ord_num,
@@ -123,11 +138,17 @@ BEGIN
 			END sls_price
 		FROM bronze.crm_sales_details;
 
+		SET @end_time = GETDATE();
+		PRINT('Loading Duration: ' + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS VARCHAR) + ' Seconds')
+		PRINT('---------------')
+
 		PRINT('--------------------------')
-		PRINT('Loading crm tables...')
+		PRINT('Loading erp tables...')
 		PRINT('--------------------------')
 
 		PRINT('>> Loading silver.erp_CUST_AZ12')
+		SET @start_time = GETDATE();
+
 		TRUNCATE TABLE silver.erp_CUST_AZ12
 		INSERT INTO silver.erp_CUST_AZ12 (
 			CID,
@@ -151,7 +172,13 @@ BEGIN
 			END GEN
 		FROM bronze.erp_CUST_AZ12;
 
+		SET @end_time = GETDATE();
+		PRINT('Loading Duration: ' + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS VARCHAR) + ' Seconds')
+		PRINT('---------------')
+
 		PRINT('>> Loading silver.erp_LOC_A101')
+		SET @start_time = GETDATE();
+
 		TRUNCATE TABLE silver.erp_LOC_A101
 		INSERT INTO silver.erp_LOC_A101(
 			CID,
@@ -167,7 +194,13 @@ BEGIN
 			END CNTRY
 		FROM bronze.erp_LOC_A101;
 
+		SET @end_time = GETDATE();
+		PRINT('Loading Duration: ' + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS VARCHAR) + ' Seconds')
+		PRINT('---------------')
+
 		PRINT('>> Loading silver.erp_PX_CAT_G1V2')
+		SET @start_time = GETDATE();
+
 		TRUNCATE TABLE silver.erp_PX_CAT_G1V2;
 		INSERT INTO silver.erp_PX_CAT_G1V2 (
 			ID,
@@ -180,6 +213,10 @@ BEGIN
 			SUBCAT,
 			MAINTENANCE
 		FROM bronze.erp_PX_CAT_G1V2;
+
+		SET @end_time = GETDATE();
+		PRINT('Loading Duration: ' + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS VARCHAR) + ' Seconds')
+		PRINT('---------------')
 	END TRY
 	BEGIN CATCH
 		PRINT('Error occured!');
@@ -187,4 +224,8 @@ BEGIN
 		PRINT('Error line: ' + ERROR_LINE());
 		PRINT('Error number: ' + ERROR_NUMBER());
 	END CATCH
+
+	SET @batch_end = GETDATE();
+	PRINT('Batch Duration: ' + CAST(DATEDIFF(SECOND, @batch_start, @batch_end) AS VARCHAR) + ' Seconds')
+	PRINT('---------------')
 END
