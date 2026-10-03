@@ -1,1 +1,70 @@
+/*
+Script Purpose:
+	This script tests the data correctness of 
+	the gold layer by checking whether the cleaning
+	is done correctly or not.
+*/
+
+/*
+----------------------------------
+-- Tests on gold.dim_customer
+----------------------------------
+*/
+
+-- Check duplicates
+-- Expectation: No Results
+SELECT customer_id, COUNT(*)
+FROM gold.dim_customer
+GROUP BY customer_id
+HAVING COUNT(*) > 1;
+
+-- Check the gender difference
+SELECT DISTINCT
+	ci.cst_gndr,
+	az.GEN,
+	CASE
+		WHEN ci.cst_gndr = 'n/a' THEN ISNULL(az.GEN, 'n/a')
+		ELSE ci.cst_gndr
+	END new_gender
+FROM silver.crm_cust_info ci
+LEFT JOIN silver.erp_LOC_A101 lc
+	ON ci.cst_key = lc.CID
+LEFT JOIN silver.erp_CUST_AZ12 az
+	ON ci.cst_key = az.CID;
+
+/*
+----------------------------------
+-- Tests on gold.dim_product
+----------------------------------
+*/
+
+-- Check duplicates
+-- Expectation: No Results
+SELECT product_id, COUNT(*)
+FROM gold.dim_product
+GROUP BY product_id
+HAVING COUNT(*) > 1
+
+/*
+----------------------------------
+-- Tests on gold.dim_product
+----------------------------------
+*/
+
+-- Check duplicates
+-- Expectation: Multiple Results for Multiple Products.
+SELECT order_number, COUNT(*)
+FROM gold.fact_sales
+GROUP BY order_number 
+HAVING COUNT(*) > 1
+
+-- Check for foreign key integrity.
+-- Expectation: No Results.
+SELECT *
+FROM gold.fact_sales fs
+LEFT JOIN gold.dim_customer dc
+	ON fs.customer_key = dc.customer_key
+LEFT JOIN gold.dim_product dp
+	ON fs.product_key = dp.product_key
+WHERE dc.customer_key IS NULL
 
